@@ -11,9 +11,28 @@ const int TRIANGLE_VERTEX_TOP[2] = {WIDTH / 2, 100};
 const int TRIANGLE_VERTEX_LEFT[2] = {TRIANGLE_VERTEX_TOP[0] - (SIDE_LENGTH / 2), TRIANGLE_VERTEX_TOP[1] + int(sqrt(3) / 2 * SIDE_LENGTH)};
 const int TRIANGLE_VERTEX_RIGHT[2] = {TRIANGLE_VERTEX_TOP[0] + (SIDE_LENGTH / 2), TRIANGLE_VERTEX_TOP[1] + int(sqrt(3) / 2 * SIDE_LENGTH)};
 
+// check if mouse is in the triangle by using piecewise inequality using slope of triangle and treating the screen as a graph
+bool checkIfMouseIsInTriangle(int mouseX, int mouseY) {
+    // due to SDL's origin being on the top left, y increases as it goes down, x increases as it goes right
+    // slopes, y-intercepts, and inequalities are flipped compared to the cartesian plane
+
+    // b = y - mx
+    int leftSideYIntercept = int(TRIANGLE_VERTEX_TOP[1] + (sqrt(3) * TRIANGLE_VERTEX_TOP[0]));
+    int rightSideYIntercept = int(TRIANGLE_VERTEX_TOP[1] - (sqrt(3) * TRIANGLE_VERTEX_TOP[0]));
+    std::cout << "Left hand side y-int: " << leftSideYIntercept << std::endl;
+    std::cout << "Right hand side y-int: " << rightSideYIntercept << std::endl;
+
+    if (mouseY > TRIANGLE_VERTEX_TOP[1] + int(sqrt(3) / 2 * SIDE_LENGTH)) return false; // mouse cannot be under or over triangle
+    if (mouseX < TRIANGLE_VERTEX_TOP[0]) {
+        return mouseY > int((-1 * sqrt(3) * mouseX) + leftSideYIntercept);
+    } else {
+        return mouseY > int((sqrt(3) * mouseX) + rightSideYIntercept);
+    }
+}
+
 int main (int argc, char* argv[]) {
     // initialize everything
-    if ( SDL_Init(SDL_INIT_EVERYTHING) != 0 ) {
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         std::cout << "Error : " << SDL_GetError() << std::endl;
         return -1;
     } else {
@@ -30,6 +49,7 @@ int main (int argc, char* argv[]) {
     SDL_Event eventHandler;
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
     bool isRunning = true;
+    bool validMousePos;
 
     // program loop
     while (isRunning) {
@@ -44,7 +64,9 @@ int main (int argc, char* argv[]) {
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 SDL_GetMouseState(&mouseX, &mouseY);
-                std::cout << "(" << mouseX << ", " << mouseY << ")" << std::endl;
+                std::cout << "origin at top left: (" << mouseX << ", " << mouseY << ")" << std::endl;
+                validMousePos = checkIfMouseIsInTriangle(mouseX, mouseY);
+                std::cout << "Valid mouse position: " << validMousePos << std::endl;
                 break;
         }
 
