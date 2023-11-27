@@ -2,20 +2,14 @@
 #include <SDL.h>
 #include <screen.hpp>
 #include <mouse.hpp>
-
-const int WIDTH = 800;
-const int HEIGHT = 600;
-const int SIDE_LENGTH = 450;
-
-const int TRIANGLE_VERTEX_TOP[2] = {WIDTH / 2, 100};
-const int TRIANGLE_VERTEX_LEFT[2] = {TRIANGLE_VERTEX_TOP[0] - (SIDE_LENGTH / 2), TRIANGLE_VERTEX_TOP[1] + int(sqrt(3) / 2 * SIDE_LENGTH)};
-const int TRIANGLE_VERTEX_RIGHT[2] = {TRIANGLE_VERTEX_TOP[0] + (SIDE_LENGTH / 2), TRIANGLE_VERTEX_TOP[1] + int(sqrt(3) / 2 * SIDE_LENGTH)};
+#include <vector>
 
 Screen::Screen(){} // defines constructor
 Screen::~Screen(){} // defines deconstructor (c++ memory thingamabobs)
 
 // define methods initialized in screen.hpp (design principlesm, yay!)
-void Screen::init(const char* title, int x, int y, int width, int height, bool fullscreen) {
+// DEBUG: everything seems fine here
+void Screen::init(const char* title, int x, int y, int width, int height, bool fullscreen, int triangleSideLength, int* triangleVertexTop) {
     _isRunning = true;
 
     // initialize all sdl systems
@@ -43,29 +37,100 @@ void Screen::init(const char* title, int x, int y, int width, int height, bool f
     } else {
         std::cout << "Renderer initalization successful" << std::endl;
     }
- }
 
+    _SIDE_LENGTH = triangleSideLength;
+
+    _TRIANGLE_VERTICES = {{0, 0}, {0, 0}, {0, 0}};
+    _TRIANGLE_VERTICES[0][0] = triangleVertexTop[0];
+    _TRIANGLE_VERTICES[0][1] = triangleVertexTop[1];
+    _TRIANGLE_VERTICES[1][0] = _TRIANGLE_VERTICES[0][0] - (_SIDE_LENGTH / 2);
+    _TRIANGLE_VERTICES[1][1] = _TRIANGLE_VERTICES[0][1]  + int(sqrt(3) / 2 * triangleSideLength);
+    _TRIANGLE_VERTICES[2][0] = _TRIANGLE_VERTICES[0][0] + (_SIDE_LENGTH / 2);
+    _TRIANGLE_VERTICES[2][1] =  _TRIANGLE_VERTICES[0][1] + int(sqrt(3) / 2 * _SIDE_LENGTH);
+
+    std::cout << "Triangle Vertices: {";
+    for (auto i: _TRIANGLE_VERTICES) {
+        std::cout << "{";
+        for (auto j: i) {
+            std::cout << j << ", ";
+        }
+        std::cout << "}, ";
+    }
+    std::cout << "}" << std::endl;
+
+    std::cout << "Press any key to start the program";
+    std::cin.get();
+    _screenCurrentState = Idle;
+}
+
+// checks events in SDL queue to act on it
+// DEBUG: everything is probably good here too
 void Screen::handleEvents() {
+    _validMousePos = false;
+
     SDL_PollEvent(&_event);
-    int mouseX, mouseY;
     switch (_event.type) {
         case SDL_QUIT:
             _isRunning = false;
             break;
         case SDL_MOUSEBUTTONDOWN:
-            SDL_GetMouseState(&mouseX, &mouseY);
-            std::cout << "origin at top left: (" << mouseX << ", " << mouseY << ")" << std::endl;
-            _validMousePos = checkIfMouseIsInTriangle(mouseX, mouseY, SIDE_LENGTH, TRIANGLE_VERTEX_TOP[0], TRIANGLE_VERTEX_TOP[1]);
+            SDL_GetMouseState(&_mouseX, &_mouseY);
+            std::cout << "origin at top left: (" << _mouseX << ", " << _mouseY << ")" << std::endl;
+            _validMousePos = checkIfMouseIsInTriangle(_mouseX, _mouseY, _SIDE_LENGTH, _TRIANGLE_VERTICES[0][0], _TRIANGLE_VERTICES[0][1]);
             std::cout << "Valid mouse position: " << _validMousePos << std::endl;
+            SDL_RenderDrawPoint(_renderer, _mouseX, _mouseY);
             break;
     }
 
 }
 
-void Screen::update() {
+// note: calls after render
+// {DotHandler*} the pointer to the DotHandler class (we only need one)
+// updates the screen with anything else after rendering
+// DEBUG: DEFINITELY PROBLEM HERE
+void Screen::update(DotHandler* dotHandler) {
     // update stuff per frame here (probably calculations and whatever)
+    switch (_screenCurrentState) {
+        case Idle:
+            // change current state to fillindots, skip animation for now
+            if (_validMousePos) { // _screenCurrentState = FillInDots;
+                std::vector<int> newDot = dotHandler->newRandomDotPosition(getVertices()); // no need to call Screen->getVertices() because already in closest outer bracket scope (design principles yay!)
+                
+                std::cout << "newDot: (";
+                for (int i: newDot) std::cout << i << ", ";
+                std::cout << ")" << std::endl;
+                
+                dotHandler->updateDotPositions(newDot);
+                break;
+            }
+            dotHandler->renderDots(_renderer);
+            _validMousePos = false;
+            break;
+        case Animation:
+            // blah blah animation and stuff goes here
+            _screenCurrentState = FillInDots;
+            break;
+        case FillInDots:
+            /*
+            {
+                std::vector<int> newDot = dotHandler->newRandomDotPosition(getVertices()); // no need to call Screen->getVertices() because already in closest outer bracket scope (design principles yay!)
+                
+                std::cout << "newDot: (";
+                for (int i: newDot) std::cout << i << ", ";
+                std::cout << ")" << std::endl;
+                
+                dotHandler->updateDotPositions(newDot);
+                break;
+            }
+            */
+        case WaitForRestart:
+            break;
+    }
 }
 
+// note: calls before update
+// renders prerequisites needed before other actions
+// DEBUG: no problem here
 void Screen::render() {
     // draw background
     SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
@@ -73,20 +138,28 @@ void Screen::render() {
 
     // stuff to draw goes under here
     SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
-    SDL_RenderDrawLine(_renderer, TRIANGLE_VERTEX_TOP[0], TRIANGLE_VERTEX_TOP[1], TRIANGLE_VERTEX_LEFT[0], TRIANGLE_VERTEX_LEFT[1]);
-    SDL_RenderDrawLine(_renderer, TRIANGLE_VERTEX_TOP[0], TRIANGLE_VERTEX_TOP[1], TRIANGLE_VERTEX_RIGHT[0], TRIANGLE_VERTEX_RIGHT[1]);
-    SDL_RenderDrawLine(_renderer, TRIANGLE_VERTEX_LEFT[0], TRIANGLE_VERTEX_LEFT[1], TRIANGLE_VERTEX_RIGHT[0], TRIANGLE_VERTEX_RIGHT[1]);
+    SDL_RenderDrawLine(_renderer, _TRIANGLE_VERTICES[0][0], _TRIANGLE_VERTICES[0][1], _TRIANGLE_VERTICES[1][0], _TRIANGLE_VERTICES[1][1]);
+    SDL_RenderDrawLine(_renderer, _TRIANGLE_VERTICES[0][0], _TRIANGLE_VERTICES[0][1], _TRIANGLE_VERTICES[2][0], _TRIANGLE_VERTICES[2][1]);
+    SDL_RenderDrawLine(_renderer, _TRIANGLE_VERTICES[1][0], _TRIANGLE_VERTICES[1][1], _TRIANGLE_VERTICES[2][0], _TRIANGLE_VERTICES[2][1]);
 
     SDL_RenderPresent(_renderer);
 }
 
+// destroy everything (because this is c++ and we gotta worry about memory and shit) and quit
 void Screen::clean() {
-    // destroy everything (because this is c++ and we gotta worry about memory and shit) and quit
     SDL_DestroyRenderer(_renderer);
     SDL_DestroyWindow(_window);
     SDL_Quit();
 }
 
+// checks if screen is active
+// {return} bool to check is screen is running
 bool Screen::running() {
     return Screen::_isRunning;
+}
+
+// outputs calculated vertices of equilateral triangle
+// {return} 2D vector of triangle vertices
+std::vector<std::vector<int>> Screen::getVertices() {
+    return Screen::_TRIANGLE_VERTICES;
 }

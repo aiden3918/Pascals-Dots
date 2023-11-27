@@ -16,6 +16,7 @@ bool checkIfMouseIsInTriangle(int mouseX, int mouseY, int side_length, int refer
     std::cout << "Right hand side y-int: " << rightSideYIntercept << std::endl;
 
     if (mouseY > referenceY + int(sqrt(3) / 2 * side_length)) return false; // mouse cannot be under or over triangle
+    // right side and left side of triangle are checked with different inequalities
     if (mouseX < referenceX) {
         return mouseY > int((-1 * sqrt(3) * mouseX) + leftSideYIntercept);
     } else {
