@@ -21,7 +21,7 @@ void Screen::init(const char* title, int x, int y, int width, int height, bool f
     }
 
     // create a window
-    _window = SDL_CreateWindow("hehe", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
+    _window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
     if (_window == NULL) {
         std::cout << "Unable to create window" << std::endl;
         _isRunning = false;
@@ -88,7 +88,6 @@ void Screen::handleEvents() {
 // note: calls before render
 // {DotHandler*} the pointer to the DotHandler class (we only need one)
 // updates the screen with anything else after rendering
-// DEBUG: DEFINITELY PROBLEM HERE
 void Screen::update(DotHandler* dotHandler) {
     // update stuff per frame here (probably calculations and whatever)
     switch (_screenCurrentState) {
@@ -99,29 +98,24 @@ void Screen::update(DotHandler* dotHandler) {
                 // std::vector<int> newDot = dotHandler->newRandomDotPosition(getVertices());
                 // std::cout << "New dot position successfully generated" << std::endl;
                 
-                std::vector<int> test = {_mouseX, _mouseY};
-                dotHandler->updateDotPositions(test);
-                break;
+                std::vector<int> firstDot = {_mouseX, _mouseY};
+                dotHandler->updateDotPositions(firstDot);
+                _screenCurrentState = Animation;
             }
-            _validMousePos = false;
             break;
         case Animation:
             // blah blah animation and stuff goes here
             _screenCurrentState = FillInDots;
             break;
         case FillInDots:
-            /*
             {
                 std::vector<int> newDot = dotHandler->newRandomDotPosition(getVertices()); // no need to call Screen->getVertices() because already in closest outer bracket scope (design principles yay!)
                 
-                std::cout << "newDot: (";
-                for (int i: newDot) std::cout << i << ", ";
-                std::cout << ")" << std::endl;
+                std::cout << "newDot: (" << newDot[0] << ", " << newDot[1] << std::endl;
                 
                 dotHandler->updateDotPositions(newDot);
                 break;
             }
-            */
         case WaitForRestart:
             break;
     }
@@ -141,9 +135,13 @@ void Screen::render(DotHandler* dotHandler) {
     SDL_RenderDrawLine(_renderer, _TRIANGLE_VERTICES[0][0], _TRIANGLE_VERTICES[0][1], _TRIANGLE_VERTICES[2][0], _TRIANGLE_VERTICES[2][1]);
     SDL_RenderDrawLine(_renderer, _TRIANGLE_VERTICES[1][0], _TRIANGLE_VERTICES[1][1], _TRIANGLE_VERTICES[2][0], _TRIANGLE_VERTICES[2][1]);
 
-    if (dotHandler->getVectorSize() > 0 ) dotHandler->renderDots(_renderer);
+    if (_screenCurrentState == FillInDots) dotHandler->renderDots(_renderer);
 
     SDL_RenderPresent(_renderer);
+}
+
+int Screen::getAnimationFrameCounter() {
+    return _animationFrameCounter;
 }
 
 // destroy everything (because this is c++ and we gotta worry about memory and shit) and quit
@@ -160,7 +158,7 @@ bool Screen::running() {
 }
 
 // outputs calculated vertices of equilateral triangle
-// {return} 2D vector of triangle vertices
+// {return} 2D vector of triangle vertices {{x1, y1}, {x2, y2}, {x3, y3}}
 std::vector<std::vector<int>> Screen::getVertices() {
     return Screen::_TRIANGLE_VERTICES;
 }

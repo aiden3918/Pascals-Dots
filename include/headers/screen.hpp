@@ -23,6 +23,8 @@ class Screen {
         std::vector<std::vector<int>> getVertices();
 
         bool running();
+
+        int getAnimationFrameCounter();
     
     private:
         bool _isRunning;
@@ -37,6 +39,8 @@ class Screen {
         // {{top x, top y}, {left x, left y}, {right x, right y}}
         std::vector<std::vector<int>> _TRIANGLE_VERTICES;
         int _SIDE_LENGTH;
+
+        int _animationFrameCounter;
 
         enum _screenState {Idle, Animation, FillInDots, WaitForRestart};
         _screenState _screenCurrentState;

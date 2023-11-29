@@ -1,0 +1,11 @@
+checklist:
+1. SDL setup - DONE
+2. objects setup - DONE
+3. default project systems setup - DONE
+4. draw triangle - DONE
+5. add input - DONE
+6. add dot handler object - DONE
+7. draws dots the way its supposed to - DONE
+8. first 3 dot calculations animation
+9. user settings
+10. cleanup

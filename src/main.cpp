@@ -26,7 +26,7 @@ int main (int argc, char* argv[]) {
     app = new Screen();
     dotHandler = new DotHandler(); 
 
-    app->init("hehe", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN, SIDE_LENGTH, triangleTopVertPtr);
+    app->init("Pascal's Dots", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN, SIDE_LENGTH, triangleTopVertPtr);
     dotHandler->init();
 
     while (app->running()) {

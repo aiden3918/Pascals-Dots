@@ -17,7 +17,9 @@ class DotHandler {
 
         std::vector<int> newRandomDotPosition(std::vector<std::vector<int>> vertices); // return the pointer to the array; its a workaround to returning the array itself
         void updateDotPositions(std::vector<int> newDot);
+
         void renderDots(SDL_Renderer* renderer);
+        void renderSmallDots(SDL_Renderer* renderer, int centerX, int centerY, int* color);
         void renderMediumDots(SDL_Renderer* renderer, int centerX, int centerY, int* color);
         void renderBigDots(SDL_Renderer* renderer, int centerX, int centerY, int* color);
         
@@ -27,10 +29,12 @@ class DotHandler {
     private:
         int _bigDotColor[4];
         int _mediumDotColor[4];
+        int _smallDotColor[4];
         std::vector<std::vector<int>> _dotPositions;
-        std::vector<int> _currentDotPos;
-        // std::vector<int> _newRandomDotPos; // <- maybe use this one idk
         double _randomVertexIndex;
+
+        enum fillerDotSize {Small, Medium};
+        fillerDotSize _fillerDotSizeToRender;
 };
 
 #endif
