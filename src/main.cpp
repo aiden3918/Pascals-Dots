@@ -34,8 +34,8 @@ int main (int argc, char* argv[]) {
         frameStart = SDL_GetTicks();
 
         app->handleEvents();
-        app->render();
         app->update(dotHandler);
+        app->render(dotHandler);
 
         frameTime = SDL_GetTicks() - frameStart;
 

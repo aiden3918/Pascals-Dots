@@ -58,7 +58,6 @@ void Screen::init(const char* title, int x, int y, int width, int height, bool f
     }
     std::cout << "}" << std::endl;
 
-    std::cout << "Press any key to start the program";
     std::cin.get();
     _screenCurrentState = Idle;
 }
@@ -76,34 +75,34 @@ void Screen::handleEvents() {
         case SDL_MOUSEBUTTONDOWN:
             SDL_GetMouseState(&_mouseX, &_mouseY);
             std::cout << "origin at top left: (" << _mouseX << ", " << _mouseY << ")" << std::endl;
+
             _validMousePos = checkIfMouseIsInTriangle(_mouseX, _mouseY, _SIDE_LENGTH, _TRIANGLE_VERTICES[0][0], _TRIANGLE_VERTICES[0][1]);
             std::cout << "Valid mouse position: " << _validMousePos << std::endl;
+            
             SDL_RenderDrawPoint(_renderer, _mouseX, _mouseY);
             break;
     }
 
 }
 
-// note: calls after render
+// note: calls before render
 // {DotHandler*} the pointer to the DotHandler class (we only need one)
 // updates the screen with anything else after rendering
 // DEBUG: DEFINITELY PROBLEM HERE
 void Screen::update(DotHandler* dotHandler) {
     // update stuff per frame here (probably calculations and whatever)
     switch (_screenCurrentState) {
+        // lots of testing done without changing app state for now; one step at a time
         case Idle:
             // change current state to fillindots, skip animation for now
-            if (_validMousePos) { // _screenCurrentState = FillInDots;
-                std::vector<int> newDot = dotHandler->newRandomDotPosition(getVertices()); // no need to call Screen->getVertices() because already in closest outer bracket scope (design principles yay!)
+            if (_validMousePos) {
+                // std::vector<int> newDot = dotHandler->newRandomDotPosition(getVertices());
+                // std::cout << "New dot position successfully generated" << std::endl;
                 
-                std::cout << "newDot: (";
-                for (int i: newDot) std::cout << i << ", ";
-                std::cout << ")" << std::endl;
-                
-                dotHandler->updateDotPositions(newDot);
+                std::vector<int> test = {_mouseX, _mouseY};
+                dotHandler->updateDotPositions(test);
                 break;
             }
-            dotHandler->renderDots(_renderer);
             _validMousePos = false;
             break;
         case Animation:
@@ -128,10 +127,10 @@ void Screen::update(DotHandler* dotHandler) {
     }
 }
 
-// note: calls before update
+// note: calls after update
 // renders prerequisites needed before other actions
 // DEBUG: no problem here
-void Screen::render() {
+void Screen::render(DotHandler* dotHandler) {
     // draw background
     SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
     SDL_RenderClear(_renderer); // setting renderclear before drawing just sets the background for whatever reason
@@ -141,6 +140,8 @@ void Screen::render() {
     SDL_RenderDrawLine(_renderer, _TRIANGLE_VERTICES[0][0], _TRIANGLE_VERTICES[0][1], _TRIANGLE_VERTICES[1][0], _TRIANGLE_VERTICES[1][1]);
     SDL_RenderDrawLine(_renderer, _TRIANGLE_VERTICES[0][0], _TRIANGLE_VERTICES[0][1], _TRIANGLE_VERTICES[2][0], _TRIANGLE_VERTICES[2][1]);
     SDL_RenderDrawLine(_renderer, _TRIANGLE_VERTICES[1][0], _TRIANGLE_VERTICES[1][1], _TRIANGLE_VERTICES[2][0], _TRIANGLE_VERTICES[2][1]);
+
+    if (dotHandler->getVectorSize() > 0 ) dotHandler->renderDots(_renderer);
 
     SDL_RenderPresent(_renderer);
 }

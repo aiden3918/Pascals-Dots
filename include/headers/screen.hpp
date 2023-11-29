@@ -18,7 +18,7 @@ class Screen {
 
         void handleEvents();
         void update(DotHandler* dotHandler);
-        void render();
+        void render(DotHandler* dotHandler);
         void clean();
         std::vector<std::vector<int>> getVertices();
 
