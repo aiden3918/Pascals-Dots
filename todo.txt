@@ -9,3 +9,4 @@ checklist:
 8. first 3 dot calculations animation
 9. user settings
 10. cleanup
+ - add typedef "2DVector" and "CoordsVector"
