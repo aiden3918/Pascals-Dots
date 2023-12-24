@@ -7,6 +7,7 @@ checklist:
 6. add dot handler object - DONE
 7. draws dots the way its supposed to - DONE
 8. first 3 dot calculations animation
+    - optimize it too
 9. user settings
 10. cleanup
- - add typedef "2DVector" and "CoordsVector"
+ - add typedef "2DVector", "CoordsVector", and "RGBAVector/RGBAArray"

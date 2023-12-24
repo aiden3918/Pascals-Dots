@@ -6,9 +6,12 @@
 // screen class to handle rendering and whatnot
 #include <iostream>
 #include <SDL.h>
-#include <dothandler.hpp>
 #include <vector>
 
+#include <dothandler.hpp>
+#include <animHandler.hpp>
+
+// pretty much the entire screen including SDL. controls most app-specific functions
 class Screen {
     public:
         Screen();
@@ -17,14 +20,12 @@ class Screen {
         void init(const char* title, int x, int y, int width, int height, bool isFullScreen, int triangleSideLength, int* triangleVertexTop);
 
         void handleEvents();
-        void update(DotHandler* dotHandler);
-        void render(DotHandler* dotHandler);
+        void update(DotHandler* dotHandler, AnimationHandler* animHandler);
+        void render(DotHandler* dotHandler, AnimationHandler* animHandler);
         void clean();
         std::vector<std::vector<int>> getVertices();
 
         bool running();
-
-        int getAnimationFrameCounter();
     
     private:
         bool _isRunning;
@@ -39,8 +40,6 @@ class Screen {
         // {{top x, top y}, {left x, left y}, {right x, right y}}
         std::vector<std::vector<int>> _TRIANGLE_VERTICES;
         int _SIDE_LENGTH;
-
-        int _animationFrameCounter;
 
         enum _screenState {Idle, Animation, FillInDots, WaitForRestart};
         _screenState _screenCurrentState;

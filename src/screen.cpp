@@ -2,13 +2,13 @@
 #include <SDL.h>
 #include <screen.hpp>
 #include <mouse.hpp>
+#include <animHandler.hpp>
 #include <vector>
 
 Screen::Screen(){} // defines constructor
 Screen::~Screen(){} // defines deconstructor (c++ memory thingamabobs)
 
 // define methods initialized in screen.hpp (design principlesm, yay!)
-// DEBUG: everything seems fine here
 void Screen::init(const char* title, int x, int y, int width, int height, bool fullscreen, int triangleSideLength, int* triangleVertexTop) {
     _isRunning = true;
 
@@ -63,7 +63,6 @@ void Screen::init(const char* title, int x, int y, int width, int height, bool f
 }
 
 // checks events in SDL queue to act on it
-// DEBUG: everything is probably good here too
 void Screen::handleEvents() {
     _validMousePos = false;
 
@@ -73,13 +72,13 @@ void Screen::handleEvents() {
             _isRunning = false;
             break;
         case SDL_MOUSEBUTTONDOWN:
+            if (_screenCurrentState != Idle) return;
+            
             SDL_GetMouseState(&_mouseX, &_mouseY);
             std::cout << "origin at top left: (" << _mouseX << ", " << _mouseY << ")" << std::endl;
 
             _validMousePos = checkIfMouseIsInTriangle(_mouseX, _mouseY, _SIDE_LENGTH, _TRIANGLE_VERTICES[0][0], _TRIANGLE_VERTICES[0][1]);
             std::cout << "Valid mouse position: " << _validMousePos << std::endl;
-            
-            SDL_RenderDrawPoint(_renderer, _mouseX, _mouseY);
             break;
     }
 
@@ -88,31 +87,28 @@ void Screen::handleEvents() {
 // note: calls before render
 // {DotHandler*} the pointer to the DotHandler class (we only need one)
 // updates the screen with anything else after rendering
-void Screen::update(DotHandler* dotHandler) {
+void Screen::update(DotHandler* dotHandler, AnimationHandler* animHandler) {
     // update stuff per frame here (probably calculations and whatever)
     switch (_screenCurrentState) {
-        // lots of testing done without changing app state for now; one step at a time
+        // lots of testing done without chjanging app state for now; one step at a time
         case Idle:
-            // change current state to fillindots, skip animation for now
             if (_validMousePos) {
-                // std::vector<int> newDot = dotHandler->newRandomDotPosition(getVertices());
-                // std::cout << "New dot position successfully generated" << std::endl;
-                
-                std::vector<int> firstDot = {_mouseX, _mouseY};
-                dotHandler->updateDotPositions(firstDot);
+                dotHandler->updateDotPositions({_mouseX, _mouseY});
+                // get and set three random dot positions
+                animHandler->setAnimInitDotPositions(animHandler->getThreeRandPos(_TRIANGLE_VERTICES, _mouseX, _mouseY));
+                animHandler->setAnimState(true);
                 _screenCurrentState = Animation;
             }
             break;
         case Animation:
-            // blah blah animation and stuff goes here
-            _screenCurrentState = FillInDots;
-            break;
+            {
+                if (!animHandler->getAnimState()) _screenCurrentState = FillInDots;
+                break;
+            }
         case FillInDots:
             {
                 std::vector<int> newDot = dotHandler->newRandomDotPosition(getVertices()); // no need to call Screen->getVertices() because already in closest outer bracket scope (design principles yay!)
-                
                 std::cout << "newDot: (" << newDot[0] << ", " << newDot[1] << std::endl;
-                
                 dotHandler->updateDotPositions(newDot);
                 break;
             }
@@ -122,9 +118,10 @@ void Screen::update(DotHandler* dotHandler) {
 }
 
 // note: calls after update
-// renders prerequisites needed before other actions
-// DEBUG: no problem here
-void Screen::render(DotHandler* dotHandler) {
+// responsible for rendering objects
+// {DotHandler*} the pointer to the DotHandler class
+// {AnimationHandler*} the pointer to the class handling the animation
+void Screen::render(DotHandler* dotHandler, AnimationHandler* animHandler) {
     // draw background
     SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
     SDL_RenderClear(_renderer); // setting renderclear before drawing just sets the background for whatever reason
@@ -135,13 +132,14 @@ void Screen::render(DotHandler* dotHandler) {
     SDL_RenderDrawLine(_renderer, _TRIANGLE_VERTICES[0][0], _TRIANGLE_VERTICES[0][1], _TRIANGLE_VERTICES[2][0], _TRIANGLE_VERTICES[2][1]);
     SDL_RenderDrawLine(_renderer, _TRIANGLE_VERTICES[1][0], _TRIANGLE_VERTICES[1][1], _TRIANGLE_VERTICES[2][0], _TRIANGLE_VERTICES[2][1]);
 
+    if (_screenCurrentState == Animation) {
+        // when animating
+        animHandler->animate(dotHandler, _renderer, _mouseX, _mouseY);
+    }
+
     if (_screenCurrentState == FillInDots) dotHandler->renderDots(_renderer);
 
     SDL_RenderPresent(_renderer);
-}
-
-int Screen::getAnimationFrameCounter() {
-    return _animationFrameCounter;
 }
 
 // destroy everything (because this is c++ and we gotta worry about memory and shit) and quit

@@ -39,7 +39,6 @@ std::vector<int> DotHandler::newRandomDotPosition(std::vector<std::vector<int>> 
     // using midpoint formula {midpt-coords (x, y) = (0.5(x1 + x2), 0.5(y1 + y2))}
     // (x1, y1) coords of random triangle vertex
     // (x2, y2) coords of most recent dot
-    // ERROR HERE: _currentDotPos has not been declared yet
     std::vector<int> newRandomDotPos = {(vertices[_randomVertexIndex][0] + _dotPositions[getVectorSize() - 1][0]) / 2, (vertices[_randomVertexIndex][1] + _dotPositions[getVectorSize() - 1][1]) / 2};
     std::cout << "(" << newRandomDotPos[0] << ", " << newRandomDotPos[1] << ")" << std::endl;  
 
@@ -91,6 +90,10 @@ void DotHandler::renderBigDots(SDL_Renderer* renderer, int centerX, int centerY,
     SDL_RenderDrawLine(renderer, centerX - 3, centerY + 2, centerX + 3, centerY + 2); //    *******
     SDL_RenderDrawLine(renderer, centerX - 3, centerY + 3, centerX + 3, centerY + 3); //    *******
     SDL_RenderDrawLine(renderer, centerX - 1, centerY + 4, centerX + 1, centerY + 4); //      ***
+}
+
+int* DotHandler::getSmallDotColor() {
+    return _smallDotColor;
 }
 
 // get size of the vector containing all dot's positions in dothandler class

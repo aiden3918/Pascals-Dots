@@ -22,6 +22,8 @@ class DotHandler {
         void renderSmallDots(SDL_Renderer* renderer, int centerX, int centerY, int* color);
         void renderMediumDots(SDL_Renderer* renderer, int centerX, int centerY, int* color);
         void renderBigDots(SDL_Renderer* renderer, int centerX, int centerY, int* color);
+
+        int* getSmallDotColor();
         
         void reset();
         size_t getVectorSize();
