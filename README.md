@@ -7,3 +7,5 @@ An app concerning chaos theory (I think?) that demonstrates the pattern when pla
 Got the inspiration from some random Instagram video
 
 Underlying logic and graphics made entirely with C++ and SDL2, compiled with g++
+
+Feel free to leave any questions/comments/concerns
