@@ -6,8 +6,9 @@ checklist:
 5. add input - DONE
 6. add dot handler object - DONE
 7. draws dots the way its supposed to - DONE
-8. first 3 dot calculations animation
+8. first 3 dot calculations animation - DONE(ish)
     - optimize it too
-9. user settings
+8 and a half. short explanation during demonstration
+9. user settings (reset, long explanation)
 10. cleanup
  - add typedef "2DVector", "CoordsVector", and "RGBAVector/RGBAArray"
