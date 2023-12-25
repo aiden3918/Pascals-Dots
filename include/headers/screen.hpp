@@ -41,7 +41,7 @@ class Screen {
         std::vector<std::vector<int>> _TRIANGLE_VERTICES;
         int _SIDE_LENGTH;
 
-        enum _screenState {Idle, Animation, FillInDots, WaitForRestart};
+        enum _screenState {Idle, Animation, FillInDots, WaitForRestart, Reset};
         _screenState _screenCurrentState;
 
 

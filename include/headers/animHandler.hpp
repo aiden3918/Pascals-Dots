@@ -17,9 +17,8 @@ class AnimationHandler {
         ~AnimationHandler();
 
         void setFramesPerStep(int framesPerStep);
-        void setTraversalLength(int traversalLength);
 
-        void init(std::vector<std::vector<int>> triangleVertices, DotHandler* dotHandler, int FPS, int timeLength);
+        void init(DotHandler* dotHandler, int FPS, int timeLength);
 
         std::vector<std::vector<int>> getThreeRandPos(std::vector<std::vector<int>> triangleVertices, int mouseX, int mouseY);
         void setAnimInitDotPositions(std::vector<std::vector<int>> initialDotPosits);
@@ -29,6 +28,8 @@ class AnimationHandler {
         void animateDotTraversal(SDL_Renderer* renderer, DotHandler* dotHandler, int x1, int y1, int x2, int y2);
         void drawFinishedLine(SDL_Renderer* renderer, int r, int g, int b, int a, int x1, int y1, int x2, int y2);
         void nextPhase(DotHandler* dotHandler, std::vector<int> dotPosToUpdate);
+
+        void reset();
 
         bool getAnimState();
         void setAnimState(bool val);
@@ -46,9 +47,6 @@ class AnimationHandler {
 
         std::vector<std::vector<int>> _initialDotPositions; 
         std::vector<std::vector<int>> _chosenVertices;
-
-        int _traversedX;
-        int _traversedY;
 
         int _lineColor[4];
 

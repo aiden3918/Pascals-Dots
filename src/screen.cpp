@@ -80,6 +80,9 @@ void Screen::handleEvents() {
             _validMousePos = checkIfMouseIsInTriangle(_mouseX, _mouseY, _SIDE_LENGTH, _TRIANGLE_VERTICES[0][0], _TRIANGLE_VERTICES[0][1]);
             std::cout << "Valid mouse position: " << _validMousePos << std::endl;
             break;
+        case SDL_KEYDOWN:
+            if (_event.key.keysym.sym == SDLK_r) _screenCurrentState = Reset;
+            break;
     }
 
 }
@@ -101,10 +104,8 @@ void Screen::update(DotHandler* dotHandler, AnimationHandler* animHandler) {
             }
             break;
         case Animation:
-            {
-                if (!animHandler->getAnimState()) _screenCurrentState = FillInDots;
-                break;
-            }
+            if (!animHandler->getAnimState()) _screenCurrentState = FillInDots;
+            break;
         case FillInDots:
             {
                 std::vector<int> newDot = dotHandler->newRandomDotPosition(getVertices()); // no need to call Screen->getVertices() because already in closest outer bracket scope (design principles yay!)
@@ -112,7 +113,11 @@ void Screen::update(DotHandler* dotHandler, AnimationHandler* animHandler) {
                 dotHandler->updateDotPositions(newDot);
                 break;
             }
-        case WaitForRestart:
+        case Reset:
+            std::cout << "Resetting" << std::endl;
+            animHandler->reset();
+            dotHandler->reset();
+            _screenCurrentState = Idle;
             break;
     }
 }

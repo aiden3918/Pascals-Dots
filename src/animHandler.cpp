@@ -12,49 +12,64 @@
 AnimationHandler::AnimationHandler(){}
 AnimationHandler::~AnimationHandler(){}
 
-// NOTE: everything below probably could use more comments, but :P
-
 // store frames per step
+// {int framesPerStep} - the amount of frames that will elapse per step (animation phase in seconds * FPS)
 void AnimationHandler::setFramesPerStep(int framesPerStep) {
     _framesPerStep = framesPerStep;
 }
 
-// store traversal length
-void AnimationHandler::setTraversalLength(int traversalLength) {
-    _traversalLength = traversalLength;
-}
-
 // initiate animationHandler with values
-void AnimationHandler::init(std::vector<std::vector<int>> triangleVertices, DotHandler* dotHandler, int FPS, int timeLength) {
+// {Dothandler* dotHandler} - dotHandler class
+// {int FPS} - FPS of app
+// {int timeLength} - animation length per phase in seconds
+void AnimationHandler::init(DotHandler* dotHandler, int FPS, int timeLength) {
     srand(time(NULL));
     _FPS = FPS;
     _timeLength = timeLength;
     _framesPerStep = _FPS * _timeLength;
-    _animInProgress = false;
-    _phaseCounter = 1;
-    _frameCounter = 0;
 
     _lineColor[0] = 0;
     _lineColor[1] = 0;
     _lineColor[2] = 150;
     _lineColor[3] = 255;
+
+    reset();
+}
+
+// reset AnimationHandler for replability
+void AnimationHandler::reset() {
+    _initialDotPositions = {};
+    _chosenVertices = {};
+
+    _animInProgress = false;
+    _phaseCounter = 1;
+    _frameCounter = 0;
 }
 
 // animate the sequence
+// {Dothandler* dotHandler} - dotHandler class
+// {SDL_Renderer* renderer} - SDL's renderer class
+// {int mouseX} - x position of mouse when clicked
+// {int mouseY} - y position of mouse when clicked
 void AnimationHandler::animate(DotHandler* dotHandler, SDL_Renderer* renderer, int mouseX, int mouseY) {
     dotHandler->renderDots(renderer);
 
     // probably could use more optimizing here, but i think this is a fair balance between readability and brevity
+    // animate the first line and dot traversal
     if (_phaseCounter == 1) {
 
+        // calculate and animate line traversal
         if (_frameCounter < _framesPerStep) animateLineTraversal(renderer, mouseX, mouseY, _chosenVertices[0][0], _chosenVertices[0][1]);
         else if (_frameCounter < _framesPerStep * 2) { 
             // still drawing line
             drawFinishedLine(renderer, _lineColor[0], _lineColor[1], _lineColor[2], _lineColor[3], mouseX, mouseY, _chosenVertices[0][0], _chosenVertices[0][1]);
+            // calculate and animate dot traversal
             animateDotTraversal(renderer, dotHandler, mouseX, mouseY, _initialDotPositions[0][0], _initialDotPositions[0][1]);
         } 
+        // move on to the next phase
         else nextPhase(dotHandler, _initialDotPositions[0]);
 
+    // repeat 2 more times (again, readability)
     } else if (_phaseCounter == 2) {
 
         if (_frameCounter < _framesPerStep) animateLineTraversal(renderer, _initialDotPositions[0][0], _initialDotPositions[0][1], _chosenVertices[1][0], _chosenVertices[1][1]);
@@ -73,6 +88,7 @@ void AnimationHandler::animate(DotHandler* dotHandler, SDL_Renderer* renderer, i
         } 
         else nextPhase(dotHandler, _initialDotPositions[2]);
 
+    // finish animation
     } else {
         setAnimState(false);
         return;
@@ -80,6 +96,11 @@ void AnimationHandler::animate(DotHandler* dotHandler, SDL_Renderer* renderer, i
 }
 
 // animate the line "crossing" at any point in the animation
+// {SDL_Renderer* renderer} - SDL's renderer class
+// {int x1} - initial x position of line
+// {int y1} - initial y position of line
+// {int x2} - final x position of line
+// {int y2} - final y position of line
 void AnimationHandler::animateLineTraversal(SDL_Renderer* renderer, int x1, int y1, int x2, int y2) {
     // traversed x: Tx = a + k(c-a)
     // traversed y: Ty = b + k(d-b)
@@ -97,6 +118,12 @@ void AnimationHandler::animateLineTraversal(SDL_Renderer* renderer, int x1, int 
 }
 
 // animate the dot "travelling" at any point in the animation
+// {SDL_Renderer* renderer} - SDL's renderer class
+// {Dothandler* dotHandler} - dotHandler class
+// {int x1} - initial x position of dot
+// {int y1} - initial y position of dot
+// {int x2} - final x position of dot
+// {int y2} - final y position of dot
 void AnimationHandler::animateDotTraversal(SDL_Renderer* renderer, DotHandler* dotHandler, int x1, int y1, int x2, int y2) {
     int traversedX = (int)round(((float)x1 + ((float)(_frameCounter - _framesPerStep) / (float)_framesPerStep) * (float)(x2 - x1)));
     int traversedY = (int)round(((float)y1 + ((float)(_frameCounter - _framesPerStep) / (float)_framesPerStep) * (float)(y2 - y1)));
@@ -106,6 +133,7 @@ void AnimationHandler::animateDotTraversal(SDL_Renderer* renderer, DotHandler* d
 }
 
 // SDL_RenderDrawLine() with extra steps for the animation process
+// I don't think this needs much of an explanation... :P
 void AnimationHandler::drawFinishedLine(SDL_Renderer* renderer, int r, int g, int b, int a, int x1, int y1, int x2, int y2) {
     SDL_SetRenderDrawColor(renderer, r, g, b, a);
     SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
@@ -113,6 +141,8 @@ void AnimationHandler::drawFinishedLine(SDL_Renderer* renderer, int r, int g, in
 }
 
 // set the animation to the next phase by resetting necessary counters and finalizing dot positions
+// {Dothandler* dotHandler} - dotHandler class
+// {std::vector<int> dotPosToUpdate} - the (x, y) of the finalized dot's position
 void AnimationHandler::nextPhase(DotHandler* dotHandler, std::vector<int> dotPosToUpdate) {
     dotHandler->updateDotPositions(dotPosToUpdate);
     _phaseCounter++;
@@ -151,6 +181,8 @@ std::vector<std::vector<int>> AnimationHandler::getThreeRandPos(std::vector<std:
     return threeRandPos;
 }
 
+// store the initial dot positions in the animation
+// {std::vector<std::vector<int>> initialDotPosits} - vector of vectors containing dot positions
 void AnimationHandler::setAnimInitDotPositions(std::vector<std::vector<int>> initialDotPosits) {
     _initialDotPositions = initialDotPosits;
 }
@@ -162,6 +194,7 @@ bool AnimationHandler::getAnimState() {
 }
 
 // set the state of the animation (whether it is done or not)
+// {bool val} - state to set animation handler to
 void AnimationHandler::setAnimState(bool val) {
     _animInProgress = val;
 }

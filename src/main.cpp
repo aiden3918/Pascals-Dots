@@ -31,7 +31,7 @@ int main (int argc, char* argv[]) {
 
     app->init("Pascal's Dots", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN, SIDE_LENGTH, triangleTopVertPtr);
     dotHandler->init();
-    animHandler->init(app->getVertices(), dotHandler, FPS, 2);
+    animHandler->init(dotHandler, FPS, 2);
 
     while (app->running()) {
         // "frames" are FPS system: keeps track of seconds passed to update screen, then delays that by the number of ms in between frames - ms that elapsed to keep a stable FPS
