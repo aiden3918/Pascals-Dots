@@ -8,7 +8,7 @@ checklist:
 7. draws dots the way its supposed to - DONE
 8. first 3 dot calculations animation - DONE(ish)
     - optimize it too
-8 and a half. short explanation during demonstration
-9. user settings (reset, long explanation)
+8 and a half. short explanation during demonstration - eh...
+9. user settings (reset) - DONE
 10. cleanup
  - add typedef "2DVector", "CoordsVector", and "RGBAVector/RGBAArray"
